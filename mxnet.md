@@ -76,7 +76,10 @@ b
 [2,]    3    3    3
 ```
 
-If has GPU
+Configuration
+========================================================
+
+Test your installation with GPU
 
 
 ```r
@@ -153,8 +156,8 @@ mx.nd.random.normal(0, 1, 10)
 ```
 
 ```
- [1]  1.1630787  0.4838046  0.2995635  0.1530255 -1.1688148  1.5580711
- [7] -0.5459446 -2.3556297  0.5414402  2.6785066
+ [1]  2.2122064  0.7740038  1.0434405  1.1839255  1.8917114 -1.2347414
+ [7] -1.7710290 -0.4513845  0.5793836 -1.8560820
 ```
 
 NDArray
@@ -216,6 +219,46 @@ system.time({
 })
 ```
 
+```
+   user  system elapsed 
+ 12.312   0.008  12.321 
+```
+
+NDArray
+========================================================
+
+- Matrix multiplication on CPU
+
+
+```r
+system.time({
+  a <- mx.nd.array(mat, ctx = mx.cpu())
+  res <- mx.nd.dot(a, a)
+  res_mat_cpu <- as.matrix(res)
+})
+```
+
+```
+   user  system elapsed 
+  6.664   0.128   6.769 
+```
+
+```r
+class(res)
+```
+
+```
+[1] "MXNDArray"
+```
+
+```r
+class(res_mat_cpu)
+```
+
+```
+[1] "matrix"
+```
+
 NDArray
 ========================================================
 
@@ -226,10 +269,10 @@ NDArray
 system.time({
   a <- mx.nd.array(mat, ctx = mx.gpu())
   res <- mx.nd.dot(a, a)
-  res_mat <- as.matrix(res)
+  res_mat_gpu <- as.matrix(res)
 })
 class(res)
-class(res_mat)
+class(res_mat_gpu)
 ```
 
 NDArray
@@ -244,23 +287,36 @@ system.time({
   # pointer assignment
   res <- mx.nd.dot(a, a)
 })
+```
+
+```
+   user  system elapsed 
+  0.000   0.000   0.001 
+```
+
+```r
 system.time({
   # Asynchronous computation
   res_mat <- as.matrix(res)
 })
+```
+
+```
+   user  system elapsed 
+  6.516   0.064   6.559 
+```
+
+```r
 system.time({
   # Finished computation
   res_mat <- as.matrix(res)
 })
 ```
 
-Practice
-========================================================
-
-Compare matrix multiplication efficiency on CPU
-
-- Native R matrix
-- NDArray
+```
+   user  system elapsed 
+  0.036   0.048   0.086 
+```
 
 Neural Network
 ========================================================
@@ -325,7 +381,7 @@ Activation
 act <- mx.symbol.Activation(pool.type='relu')
 ```
 
-![plot of chunk unnamed-chunk-16](mxnet-figure/unnamed-chunk-16-1.png)
+![plot of chunk unnamed-chunk-17](mxnet-figure/unnamed-chunk-17-1.png)
 
 MNIST
 ========================================================
@@ -375,7 +431,7 @@ plot_mnist <- function(dat, ind) {
 plot_mnist(train_mnist, 19)
 ```
 
-<img src="mxnet-figure/unnamed-chunk-18-1.png" title="plot of chunk unnamed-chunk-18" alt="plot of chunk unnamed-chunk-18" style="display: block; margin: auto;" />
+<img src="mxnet-figure/unnamed-chunk-19-1.png" title="plot of chunk unnamed-chunk-19" alt="plot of chunk unnamed-chunk-19" style="display: block; margin: auto;" />
 
 MNIST
 ========================================================
@@ -513,7 +569,7 @@ Let's take a look!
 plot_mnist(train_fmnist, 1)
 ```
 
-![plot of chunk unnamed-chunk-26](mxnet-figure/unnamed-chunk-26-1.png)
+![plot of chunk unnamed-chunk-27](mxnet-figure/unnamed-chunk-27-1.png)
 
 FashionMNIST
 ========================================================
@@ -539,7 +595,8 @@ First we train with the same MLP
 
 
 ```r
-model <- mx.mlp(train_fmnist_iter, hidden_node=c(256), out_node=10, ctx=mx.cpu(), 
+model <- mx.mlp(train_fmnist_iter, hidden_node=c(256),
+                out_node=10, ctx=mx.cpu(), 
                 eval.metric=mx.metric.accuracy,
                 eval.data=test_fmnist_iter,
                 learning.rate=0.01, num.round=10)
@@ -589,8 +646,6 @@ get.lenet <- function() {
   lenet <- mx.symbol.SoftmaxOutput(data=fc3)
   return(lenet)
 }
-
-lenet = get.lenet()
 ```
 
 Neural Network
@@ -622,15 +677,16 @@ test_fmnist_iter <- mx.io.arrayiter(x.test, y.test, batch.size = 128, shuffle = 
 Neural Network
 ========================================================
 
-A slow training epoch on CPU:
+One slow training epoch on CPU:
 
 
 ```r
-model = mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.cpu(),
-                                    eval.metric=mx.metric.accuracy,
-                                    eval.data=test_fmnist_iter,
-                                    initializer = mx.init.Xavier(),
-                                    learning.rate=0.1, num.round=1)
+lenet = get.lenet()
+model <- mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.cpu(),
+                                     eval.metric=mx.metric.accuracy,
+                                     eval.data=test_fmnist_iter,
+                                     initializer = mx.init.Xavier(),
+                                     learning.rate=0.1, num.round=1)
 ```
 
 Neural Network
@@ -640,11 +696,11 @@ Training time on GPU:
 
 
 ```r
-model = mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.gpu(),
-                                    eval.metric=mx.metric.accuracy,
-                                    eval.data=test_fmnist_iter,
-                                    initializer = mx.init.Xavier(),
-                                    learning.rate=0.1, num.round=10)
+model <- mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.gpu(),
+                                     eval.metric=mx.metric.accuracy,
+                                     eval.data=test_fmnist_iter,
+                                     initializer = mx.init.Xavier(),
+                                     learning.rate=0.1, num.round=10)
 ```
 
 
@@ -655,11 +711,11 @@ How about we tune some parameters?
 
 
 ```r
-model = mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.gpu(),
-                                    eval.metric=mx.metric.accuracy,
-                                    eval.data=test_fmnist_iter,
-                                    initializer = mx.init.Xavier(),
-                                    learning.rate=0.01, num.round=10)
+model <- mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.gpu(),
+                                     eval.metric=mx.metric.accuracy,
+                                     eval.data=test_fmnist_iter,
+                                     initializer = mx.init.Xavier(),
+                                     learning.rate=0.01, num.round=10)
 ```
 
 Neural Network
@@ -692,11 +748,11 @@ Why do we say MNIST is too simple?
 
 
 ```r
-model = mx.model.FeedForward.create(lenet, train_mnist_iter, ctx=mx.gpu(),
-                                    eval.metric=mx.metric.accuracy,
-                                    eval.data=test_mnist_iter,
-                                    initializer = mx.init.Xavier(),
-                                    learning.rate=0.1, num.round=10)
+model <- mx.model.FeedForward.create(lenet, train_mnist_iter, ctx=mx.gpu(),
+                                     eval.metric=mx.metric.accuracy,
+                                     eval.data=test_mnist_iter,
+                                     initializer = mx.init.Xavier(),
+                                     learning.rate=0.1, num.round=10)
 ```
 
 Practice
@@ -737,6 +793,9 @@ base_model_url <- 'http://data.mxnet.io/models/'
 symbol_url <- paste0(base_model_url, 'imagenet/resnet/18-layers/resnet-18-symbol.json')
 params_url <- paste0(base_model_url, 'imagenet/resnet/18-layers/resnet-18-0000.params')
 synset_url <- paste0(base_model_url, 'imagenet/resnet/synset.txt')
+if (!file.exists('model')) {
+  dir.create('model')
+}
 download.file(symbol_url, 'model/resnet-18-symbol.json')
 download.file(params_url, 'model/resnet-18-0000.params')
 download.file(synset_url, 'model/synset.txt')
@@ -816,7 +875,7 @@ im <- load.image('img/mtbaker.jpg')
 plot(im)
 ```
 
-![plot of chunk unnamed-chunk-40](mxnet-figure/unnamed-chunk-40-1.png)
+![plot of chunk unnamed-chunk-41](mxnet-figure/unnamed-chunk-41-1.png)
 
 Pre-trained Model
 ========================================================
@@ -829,7 +888,7 @@ im_resized = resize.image(im, 224)
 plot(im_resized)
 ```
 
-![plot of chunk unnamed-chunk-41](mxnet-figure/unnamed-chunk-41-1.png)
+![plot of chunk unnamed-chunk-42](mxnet-figure/unnamed-chunk-42-1.png)
 
 Pre-trained Model
 ========================================================

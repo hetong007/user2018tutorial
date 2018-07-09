@@ -313,7 +313,7 @@ How parameters change the depth
 Parameter Tuning
 ========================================================
 
-A new dataset:
+A new dataset: [Otto Group Product Classification Challenge](https://www.kaggle.com/c/otto-group-product-classification-challenge)
 
 - Moderate size
 - Anonymous features
@@ -340,7 +340,7 @@ param <- list("objective" = "multi:softprob",
 Parameter Tuning
 ========================================================
 
-```{r, eval=FALSE}
+```{r}
 bst.cv <- xgb.cv(param = param, data = x, label = y, 
                  nfold = 3, nrounds = 5)
 ```
@@ -358,7 +358,7 @@ Function doc:
 
 Online doc:
 
-- https://xgboost.readthedocs.io/en/latest
+- http://xgboost.readthedocs.io/en/latest/parameter.html#parameters-in-r-package
 
 Parameter Tuning
 ========================================================
@@ -393,11 +393,6 @@ Practice
 ========================================================
 
 Tune your parameters and hit mlogloss 0.4!
-
-Parameter Tuning
-========================================================
-
-bias-variance trade off
 
 Parameter Tuning
 ========================================================
@@ -441,7 +436,7 @@ params <- list(grow_policy = 'lossguide')
 Practice
 ========================================================
 
-Tune your parameters and observe the efficiency
+Use loss-wise and histogram to speed training up
 
 About
 ========================================================

@@ -69,7 +69,10 @@ b <- a * 2 + 1
 b
 ```
 
-If has GPU
+Configuration
+========================================================
+
+Test your installation with GPU
 
 ```{r, eval=FALSE}
 a <- mx.nd.ones(c(3, 2), ctx=mx.gpu())
@@ -150,11 +153,26 @@ NDArray
 
 - Matrix multiplication on CPU
 
-```{r, eval=FALSE}
+```{r}
 mat <- matrix(runif(4000*4000), 4000, 4000)
 system.time({
   res_mat <- mat %*% mat
 })
+```
+
+NDArray
+========================================================
+
+- Matrix multiplication on CPU
+
+```{r}
+system.time({
+  a <- mx.nd.array(mat, ctx = mx.cpu())
+  res <- mx.nd.dot(a, a)
+  res_mat_cpu <- as.matrix(res)
+})
+class(res)
+class(res_mat_cpu)
 ```
 
 NDArray
@@ -166,10 +184,10 @@ NDArray
 system.time({
   a <- mx.nd.array(mat, ctx = mx.gpu())
   res <- mx.nd.dot(a, a)
-  res_mat <- as.matrix(res)
+  res_mat_gpu <- as.matrix(res)
 })
 class(res)
-class(res_mat)
+class(res_mat_gpu)
 ```
 
 NDArray
@@ -177,7 +195,7 @@ NDArray
 
 - Asynchronous computation
 
-```{r, eval=FALSE}
+```{r}
 a <- mx.nd.array(mat)
 system.time({
   # pointer assignment
@@ -192,14 +210,6 @@ system.time({
   res_mat <- as.matrix(res)
 })
 ```
-
-Practice
-========================================================
-
-Compare matrix multiplication efficiency on CPU
-
-- Native R matrix
-- NDArray
 
 Neural Network
 ========================================================
@@ -348,7 +358,7 @@ Neural Network
 
 Train with our net:
 
-```{r, eval=F}
+```{r}
 model <- mx.model.FeedForward.create(net, train_mnist_iter, ctx=mx.cpu(),
                                      eval.metric=mx.metric.accuracy,
                                      eval.data=test_mnist_iter,
@@ -360,7 +370,7 @@ Neural Network
 
 Fast model definition and training
 
-```{r, eval=FALSE}
+```{r}
 model <- mx.mlp(train_mnist_iter, hidden_node=c(256),
                 out_node=10, ctx=mx.cpu(), 
                 eval.metric=mx.metric.accuracy,
@@ -373,7 +383,7 @@ Neural Network
 
 How about we add more hidden layers?
 
-```{r, eval=FALSE}
+```{r}
 model <- mx.mlp(train_mnist_iter, hidden_node=c(256, 100, 50),
                 out_node=10, ctx=mx.cpu(), 
                 eval.metric=mx.metric.accuracy,
@@ -439,9 +449,9 @@ Neural Network
 
 First we train with the same MLP
 
-```{r, eval=FALSE}
-
-model <- mx.mlp(train_fmnist_iter, hidden_node=c(256), out_node=10, ctx=mx.cpu(), 
+```{r}
+model <- mx.mlp(train_fmnist_iter, hidden_node=c(256),
+                out_node=10, ctx=mx.cpu(), 
                 eval.metric=mx.metric.accuracy,
                 eval.data=test_fmnist_iter,
                 learning.rate=0.01, num.round=10)
@@ -490,8 +500,6 @@ get.lenet <- function() {
   lenet <- mx.symbol.SoftmaxOutput(data=fc3)
   return(lenet)
 }
-
-lenet = get.lenet()
 ```
 
 Neural Network
@@ -522,14 +530,15 @@ test_fmnist_iter <- mx.io.arrayiter(x.test, y.test, batch.size = 128, shuffle = 
 Neural Network
 ========================================================
 
-A slow training epoch on CPU:
+One slow training epoch on CPU:
 
-```{r, eval=F}
-model = mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.cpu(),
-                                    eval.metric=mx.metric.accuracy,
-                                    eval.data=test_fmnist_iter,
-                                    initializer = mx.init.Xavier(),
-                                    learning.rate=0.1, num.round=1)
+```{r}
+lenet = get.lenet()
+model <- mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.cpu(),
+                                     eval.metric=mx.metric.accuracy,
+                                     eval.data=test_fmnist_iter,
+                                     initializer = mx.init.Xavier(),
+                                     learning.rate=0.1, num.round=1)
 ```
 
 Neural Network
@@ -537,12 +546,12 @@ Neural Network
 
 Training time on GPU:
 
-```{r, eval=F}
-model = mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.gpu(),
-                                    eval.metric=mx.metric.accuracy,
-                                    eval.data=test_fmnist_iter,
-                                    initializer = mx.init.Xavier(),
-                                    learning.rate=0.1, num.round=10)
+```{r, eval=FALSE}
+model <- mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.gpu(),
+                                     eval.metric=mx.metric.accuracy,
+                                     eval.data=test_fmnist_iter,
+                                     initializer = mx.init.Xavier(),
+                                     learning.rate=0.1, num.round=10)
 ```
 
 
@@ -551,12 +560,12 @@ Neural Network
 
 How about we tune some parameters?
 
-```{r, eval=F}
-model = mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.gpu(),
-                                    eval.metric=mx.metric.accuracy,
-                                    eval.data=test_fmnist_iter,
-                                    initializer = mx.init.Xavier(),
-                                    learning.rate=0.01, num.round=10)
+```{r, eval=FALSE}
+model <- mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.gpu(),
+                                     eval.metric=mx.metric.accuracy,
+                                     eval.data=test_fmnist_iter,
+                                     initializer = mx.init.Xavier(),
+                                     learning.rate=0.01, num.round=10)
 ```
 
 Neural Network
@@ -586,12 +595,12 @@ Neural Network
 
 Why do we say MNIST is too simple?
 
-```{r, eval=F}
-model = mx.model.FeedForward.create(lenet, train_mnist_iter, ctx=mx.gpu(),
-                                    eval.metric=mx.metric.accuracy,
-                                    eval.data=test_mnist_iter,
-                                    initializer = mx.init.Xavier(),
-                                    learning.rate=0.1, num.round=10)
+```{r, eval=FALSE}
+model <- mx.model.FeedForward.create(lenet, train_mnist_iter, ctx=mx.gpu(),
+                                     eval.metric=mx.metric.accuracy,
+                                     eval.data=test_mnist_iter,
+                                     initializer = mx.init.Xavier(),
+                                     learning.rate=0.1, num.round=10)
 ```
 
 Practice
@@ -626,11 +635,14 @@ Where do I get one?
 
 Let's use ResNet18.
 
-```{r, eval=FALSE}
+```{r}
 base_model_url <- 'http://data.mxnet.io/models/'
 symbol_url <- paste0(base_model_url, 'imagenet/resnet/18-layers/resnet-18-symbol.json')
 params_url <- paste0(base_model_url, 'imagenet/resnet/18-layers/resnet-18-0000.params')
 synset_url <- paste0(base_model_url, 'imagenet/resnet/synset.txt')
+if (!file.exists('model')) {
+  dir.create('model')
+}
 download.file(symbol_url, 'model/resnet-18-symbol.json')
 download.file(params_url, 'model/resnet-18-0000.params')
 download.file(synset_url, 'model/synset.txt')

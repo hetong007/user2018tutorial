@@ -210,16 +210,16 @@ bst.cv <- xgb.cv(param = param, data = x, label = y,
 ```
 
 ```
-[1]	train-auc:0.977935+0.001538	test-auc:0.975974+0.003405 
-[2]	train-auc:0.982490+0.001667	test-auc:0.978905+0.004239 
-[3]	train-auc:0.984583+0.000465	test-auc:0.980356+0.004668 
-[4]	train-auc:0.985948+0.001198	test-auc:0.981544+0.003764 
-[5]	train-auc:0.986892+0.001435	test-auc:0.982412+0.003882 
-[6]	train-auc:0.988337+0.001754	test-auc:0.982668+0.004176 
-[7]	train-auc:0.989581+0.001473	test-auc:0.984227+0.003153 
-[8]	train-auc:0.990055+0.001319	test-auc:0.984667+0.003182 
-[9]	train-auc:0.990554+0.001196	test-auc:0.984849+0.003152 
-[10]	train-auc:0.992073+0.000864	test-auc:0.985807+0.003400 
+[1]	train-auc:0.975808+0.003401	test-auc:0.972281+0.002864 
+[2]	train-auc:0.977659+0.002517	test-auc:0.972277+0.001352 
+[3]	train-auc:0.982610+0.002353	test-auc:0.975647+0.003157 
+[4]	train-auc:0.984508+0.001708	test-auc:0.978080+0.002698 
+[5]	train-auc:0.986067+0.001547	test-auc:0.979804+0.003576 
+[6]	train-auc:0.986875+0.001302	test-auc:0.981943+0.003359 
+[7]	train-auc:0.987745+0.001235	test-auc:0.982114+0.003335 
+[8]	train-auc:0.988681+0.001241	test-auc:0.983029+0.003496 
+[9]	train-auc:0.989076+0.001266	test-auc:0.982995+0.003373 
+[10]	train-auc:0.991163+0.001137	test-auc:0.983716+0.003266 
 ```
 
 Training
@@ -235,16 +235,16 @@ bst.cv
 ```
 ##### xgb.cv 3-folds
  iter train_auc_mean train_auc_std test_auc_mean test_auc_std
-    1      0.9779347  0.0015378080     0.9759737  0.003404762
-    2      0.9824897  0.0016670911     0.9789050  0.004239436
-    3      0.9845830  0.0004645083     0.9803563  0.004667687
-    4      0.9859477  0.0011981200     0.9815443  0.003764463
-    5      0.9868923  0.0014353019     0.9824117  0.003881925
-    6      0.9883367  0.0017540001     0.9826683  0.004175537
-    7      0.9895810  0.0014727546     0.9842267  0.003152652
-    8      0.9900553  0.0013194394     0.9846667  0.003182495
-    9      0.9905537  0.0011957425     0.9848493  0.003151903
-   10      0.9920730  0.0008641493     0.9858070  0.003400259
+    1      0.9758080   0.003401134     0.9722810  0.002864236
+    2      0.9776590   0.002517461     0.9722773  0.001351559
+    3      0.9826100   0.002352536     0.9756473  0.003157445
+    4      0.9845077   0.001707747     0.9780800  0.002698321
+    5      0.9860673   0.001547118     0.9798037  0.003575691
+    6      0.9868753   0.001302422     0.9819427  0.003359254
+    7      0.9877453   0.001234834     0.9821143  0.003334505
+    8      0.9886807   0.001241175     0.9830287  0.003495935
+    9      0.9890757   0.001265941     0.9829947  0.003373196
+   10      0.9911630   0.001137177     0.9837160  0.003266101
 ```
 
 Training
@@ -269,16 +269,16 @@ model <- xgboost(param = param, data = x, label = y, nrounds = 10)
 ```
 
 ```
-[1]	train-auc:0.977574 
-[2]	train-auc:0.979881 
-[3]	train-auc:0.985361 
-[4]	train-auc:0.985925 
-[5]	train-auc:0.986335 
-[6]	train-auc:0.987732 
-[7]	train-auc:0.988687 
-[8]	train-auc:0.989903 
-[9]	train-auc:0.990156 
-[10]	train-auc:0.990730 
+[1]	train-auc:0.975602 
+[2]	train-auc:0.979455 
+[3]	train-auc:0.983702 
+[4]	train-auc:0.985109 
+[5]	train-auc:0.986201 
+[6]	train-auc:0.986646 
+[7]	train-auc:0.987687 
+[8]	train-auc:0.988145 
+[9]	train-auc:0.988687 
+[10]	train-auc:0.990535 
 ```
 
 Training
@@ -314,14 +314,14 @@ importance
 
 ```
                 Feature         Gain        Cover   Frequency
-1:   satisfaction_level 0.5159322240 0.2736583812 0.205797101
-2:   time_spend_company 0.1566868025 0.2026662588 0.118840580
-3:      last_evaluation 0.1396977067 0.0851312600 0.168115942
-4:       number_project 0.1156934810 0.2468011605 0.156521739
-5: average_montly_hours 0.0677071966 0.1790257887 0.278260870
-6:                sales 0.0030627491 0.0111438598 0.052173913
-7:               salary 0.0009791323 0.0011303532 0.014492754
-8:        Work_accident 0.0002407078 0.0004429377 0.005797101
+1:   satisfaction_level 0.5136536137 0.2798328773 0.224489796
+2:   time_spend_company 0.1672146194 0.2236614448 0.116618076
+3:      last_evaluation 0.1340233220 0.0782284751 0.163265306
+4:       number_project 0.1081485857 0.2321557423 0.148688047
+5: average_montly_hours 0.0742442506 0.1772625850 0.306122449
+6:               salary 0.0013053471 0.0014265538 0.011661808
+7:                sales 0.0011808129 0.0067436483 0.026239067
+8:        Work_accident 0.0002294486 0.0006886734 0.002915452
 ```
 
 Interpretation
@@ -392,7 +392,7 @@ How parameters change the depth
 Parameter Tuning
 ========================================================
 
-A new dataset:
+A new dataset: [Otto Group Product Classification Challenge](https://www.kaggle.com/c/otto-group-product-classification-challenge)
 
 - Moderate size
 - Anonymous features
@@ -431,6 +431,14 @@ bst.cv <- xgb.cv(param = param, data = x, label = y,
                  nfold = 3, nrounds = 5)
 ```
 
+```
+[1]	train-mlogloss:1.541981+0.001387	test-mlogloss:1.555663+0.004200 
+[2]	train-mlogloss:1.284259+0.002486	test-mlogloss:1.305575+0.004844 
+[3]	train-mlogloss:1.115395+0.002894	test-mlogloss:1.143237+0.005966 
+[4]	train-mlogloss:0.994528+0.003006	test-mlogloss:1.028737+0.006407 
+[5]	train-mlogloss:0.902859+0.002493	test-mlogloss:0.942097+0.007646 
+```
+
 Parameter Tuning
 ========================================================
 
@@ -445,7 +453,7 @@ Function doc:
 
 Online doc:
 
-- https://xgboost.readthedocs.io/en/latest
+- http://xgboost.readthedocs.io/en/latest/parameter.html#parameters-in-r-package
 
 Parameter Tuning
 ========================================================
@@ -480,11 +488,6 @@ Practice
 ========================================================
 
 Tune your parameters and hit mlogloss 0.4!
-
-Parameter Tuning
-========================================================
-
-bias-variance trade off
 
 Parameter Tuning
 ========================================================
@@ -531,7 +534,7 @@ params <- list(grow_policy = 'lossguide')
 Practice
 ========================================================
 
-Tune your parameters and observe the efficiency
+Use loss-wise and histogram to speed training up
 
 About
 ========================================================
