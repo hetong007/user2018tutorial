@@ -85,13 +85,6 @@ b <- a * 2 + 1
 b
 ```
 
-```
-     [,1] [,2]
-[1,]    3    3
-[2,]    3    3
-[3,]    3    3
-```
-
 NDArray
 ========================================================
 
@@ -160,8 +153,8 @@ mx.nd.random.normal(0, 1, 10)
 ```
 
 ```
- [1]  2.2122064  0.7740038  1.0434405  1.1839255  1.8917114 -1.2347414
- [7] -1.7710290 -0.4513845  0.5793836 -1.8560820
+ [1]  1.1630787  0.4838046  0.2995635  0.1530255 -1.1688148  1.5580711
+ [7] -0.5459446 -2.3556297  0.5414402  2.6785066
 ```
 
 NDArray
@@ -200,20 +193,7 @@ NDArray
 a <- mx.nd.ones(c(2,3), ctx=mx.gpu())
 b <- a * 2 + 1
 b
-```
-
-```
-     [,1] [,2] [,3]
-[1,]    3    3    3
-[2,]    3    3    3
-```
-
-```r
 class(b)
-```
-
-```
-[1] "MXNDArray"
 ```
 
 NDArray
@@ -261,12 +241,26 @@ NDArray
 ```r
 a <- mx.nd.array(mat)
 system.time({
+  # pointer assignment
   res <- mx.nd.dot(a, a)
 })
 system.time({
+  # Asynchronous computation
+  res_mat <- as.matrix(res)
+})
+system.time({
+  # Finished computation
   res_mat <- as.matrix(res)
 })
 ```
+
+Practice
+========================================================
+
+Compare matrix multiplication efficiency on CPU
+
+- Native R matrix
+- NDArray
 
 Neural Network
 ========================================================
@@ -288,58 +282,50 @@ Neural Network
 
 Fully Connected
 
-![](./img/fullyconnected.png)
-
-$$f(x) = Wx+b$$
-
-Definition:
-
 
 ```r
 fc = mx.symbol.FullyConnected()
 ```
+
+![](./img/fullyconnected.png)
+
+$$f(x) = Wx+b$$
 
 Neural Network
 ========================================================
 
 Convolutional
 
-![](./img/convolution.gif)
-
-Definition:
-
 
 ```r
 conv = mx.symbol.Convolution()
 ```
+
+![](./img/convolution.gif)
 
 Neural Network
 ========================================================
 
 Pooling
 
-![](./img/Pooling_schematic.gif)
-
-Definition:
-
 
 ```r
-pool1 <- mx.symbol.Pooling(pool.type='avg')
+pool <- mx.symbol.Pooling(pool.type='avg')
 ```
+
+![](./img/Pooling_schematic.gif)
 
 Neural Network
 ========================================================
 
 Activation
 
-![plot of chunk unnamed-chunk-15](mxnet-figure/unnamed-chunk-15-1.png)
-
-Definition:
-
 
 ```r
-act1 <- mx.symbol.Activation(pool.type='relu')
+act <- mx.symbol.Activation(pool.type='relu')
 ```
+
+![plot of chunk unnamed-chunk-16](mxnet-figure/unnamed-chunk-16-1.png)
 
 MNIST
 ========================================================
@@ -356,17 +342,10 @@ The "Hello World" dataset in deep learning.
 MNIST
 ========================================================
 
-Download with:
-
-
-```r
-download.file('https://apache-mxnet.s3-accelerate.dualstack.amazonaws.com/')
-```
-
 Load in with:
 
 ```r
-load('mnist.rda')
+load('data/mnist.rda')
 dim(train_mnist)
 ```
 
@@ -396,7 +375,7 @@ plot_mnist <- function(dat, ind) {
 plot_mnist(train_mnist, 19)
 ```
 
-<img src="mxnet-figure/unnamed-chunk-19-1.png" title="plot of chunk unnamed-chunk-19" alt="plot of chunk unnamed-chunk-19" style="display: block; margin: auto;" />
+<img src="mxnet-figure/unnamed-chunk-18-1.png" title="plot of chunk unnamed-chunk-18" alt="plot of chunk unnamed-chunk-18" style="display: block; margin: auto;" />
 
 MNIST
 ========================================================
@@ -459,11 +438,12 @@ model <- mx.model.FeedForward.create(net, train_mnist_iter, ctx=mx.cpu(),
 Neural Network
 ========================================================
 
-There's `mx.mlp` for fast model definition and training with mlp.
+Fast model definition and training
 
 
 ```r
-model <- mx.mlp(train_mnist_iter, hidden_node=c(256), out_node=10, ctx=mx.cpu(), 
+model <- mx.mlp(train_mnist_iter, hidden_node=c(256),
+                out_node=10, ctx=mx.cpu(), 
                 eval.metric=mx.metric.accuracy,
                 eval.data=test_mnist_iter,
                 learning.rate=0.01, num.round=10)
@@ -476,12 +456,20 @@ How about we add more hidden layers?
 
 
 ```r
-model <- mx.mlp(train_mnist_iter, hidden_node=c(256, 100, 50), out_node=10, ctx=mx.cpu(), 
+model <- mx.mlp(train_mnist_iter, hidden_node=c(256, 100, 50),
+                out_node=10, ctx=mx.cpu(), 
                 eval.metric=mx.metric.accuracy,
                 eval.data=test_mnist_iter,
-                learning.rate=0.1, num.round=10)
+                learning.rate=0.01, num.round=10)
 ```
 
+Practice
+========================================================
+
+Tune parametes and change network structures
+
+- `mx.mlp`
+- `mx.model.FeedForward.create`
 
 FashionMNIST
 ========================================================
@@ -496,17 +484,10 @@ FashionMNIST
 FashionMNIST
 ========================================================
 
-Download with:
-
-
-```r
-download.file('https://apache-mxnet.s3-accelerate.dualstack.amazonaws.com/')
-```
-
 Load in with:
 
 ```r
-load('fmnist.rda')
+load('data/fmnist.rda')
 dim(train_fmnist)
 ```
 
@@ -532,7 +513,7 @@ Let's take a look!
 plot_mnist(train_fmnist, 1)
 ```
 
-![plot of chunk unnamed-chunk-28](mxnet-figure/unnamed-chunk-28-1.png)
+![plot of chunk unnamed-chunk-26](mxnet-figure/unnamed-chunk-26-1.png)
 
 FashionMNIST
 ========================================================
@@ -571,7 +552,9 @@ Next, we try to train with a LeNet:
 
 ![](./img/lenet.png)
 
-We use two new building blocks: convolutional and pooling layers.
+Two new building blocks: 
+- convolutional layer
+- pooling layers
 
 Neural Network
 ========================================================
@@ -639,7 +622,7 @@ test_fmnist_iter <- mx.io.arrayiter(x.test, y.test, batch.size = 128, shuffle = 
 Neural Network
 ========================================================
 
-Dive deep into LeNet
+A slow training epoch on CPU:
 
 
 ```r
@@ -715,6 +698,11 @@ model = mx.model.FeedForward.create(lenet, train_mnist_iter, ctx=mx.gpu(),
                                     initializer = mx.init.Xavier(),
                                     learning.rate=0.1, num.round=10)
 ```
+
+Practice
+========================================================
+
+Ideas on the parameter tuning
 
 Neural Network
 ========================================================
@@ -828,7 +816,7 @@ im <- load.image('img/mtbaker.jpg')
 plot(im)
 ```
 
-![plot of chunk unnamed-chunk-42](mxnet-figure/unnamed-chunk-42-1.png)
+![plot of chunk unnamed-chunk-40](mxnet-figure/unnamed-chunk-40-1.png)
 
 Pre-trained Model
 ========================================================
@@ -841,7 +829,7 @@ im_resized = resize.image(im, 224)
 plot(im_resized)
 ```
 
-![plot of chunk unnamed-chunk-43](mxnet-figure/unnamed-chunk-43-1.png)
+![plot of chunk unnamed-chunk-41](mxnet-figure/unnamed-chunk-41-1.png)
 
 Pre-trained Model
 ========================================================
@@ -899,10 +887,20 @@ print(paste0("Predicted Top-classes: ", synset[max.idx]))
 [5] "Predicted Top-classes: n09332890 lakeside, lakeshore"
 ```
 
-Pre-trained Model
+Practice
 ========================================================
 
-Try it now!
+Try with non-standard pre-processing
+
+Practice
+========================================================
+
+Try it with your images
+
+Practice
+========================================================
+
+Try another model
 
 What Else?
 ========================================================

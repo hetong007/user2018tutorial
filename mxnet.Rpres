@@ -71,7 +71,7 @@ b
 
 If has GPU
 
-```{r}
+```{r, eval=FALSE}
 a <- mx.nd.ones(c(3, 2), ctx=mx.gpu())
 b <- a * 2 + 1
 b
@@ -131,7 +131,7 @@ NDArray
 
 - GPU compatible computation
 
-```{r}
+```{r, eval=FALSE}
 a <- mx.nd.ones(c(2,3), ctx=mx.gpu())
 b <- a * 2 + 1
 b
@@ -180,12 +180,26 @@ NDArray
 ```{r, eval=FALSE}
 a <- mx.nd.array(mat)
 system.time({
+  # pointer assignment
   res <- mx.nd.dot(a, a)
 })
 system.time({
+  # Asynchronous computation
+  res_mat <- as.matrix(res)
+})
+system.time({
+  # Finished computation
   res_mat <- as.matrix(res)
 })
 ```
+
+Practice
+========================================================
+
+Compare matrix multiplication efficiency on CPU
+
+- Native R matrix
+- NDArray
 
 Neural Network
 ========================================================
@@ -207,57 +221,49 @@ Neural Network
 
 Fully Connected
 
-![](./img/fullyconnected.png)
-
-$$f(x) = Wx+b$$
-
-Definition:
-
 ```{r, eval=FALSE}
 fc = mx.symbol.FullyConnected()
 ```
+
+![](./img/fullyconnected.png)
+
+$$f(x) = Wx+b$$
 
 Neural Network
 ========================================================
 
 Convolutional
 
-![](./img/convolution.gif)
-
-Definition:
-
 ```{r, eval=FALSE}
 conv = mx.symbol.Convolution()
 ```
+
+![](./img/convolution.gif)
 
 Neural Network
 ========================================================
 
 Pooling
 
-![](./img/Pooling_schematic.gif)
-
-Definition:
-
 ```{r, eval=FALSE}
-pool1 <- mx.symbol.Pooling(pool.type='avg')
+pool <- mx.symbol.Pooling(pool.type='avg')
 ```
+
+![](./img/Pooling_schematic.gif)
 
 Neural Network
 ========================================================
 
 Activation
 
+```{r, eval=FALSE}
+act <- mx.symbol.Activation(pool.type='relu')
+```
+
 ```{r, echo=FALSE}
 x <- mx.nd.array(seq(-5, 5, 0.01))
 y <- mx.nd.relu(x)
 plot(as.array(x), as.array(y), type='l', ylab='relu(x)', xlab='x')
-```
-
-Definition:
-
-```{r, eval=FALSE}
-act1 <- mx.symbol.Activation(pool.type='relu')
 ```
 
 MNIST
@@ -275,15 +281,9 @@ The "Hello World" dataset in deep learning.
 MNIST
 ========================================================
 
-Download with:
-
-```{r, eval=FALSE}
-download.file('https://apache-mxnet.s3-accelerate.dualstack.amazonaws.com/')
-```
-
 Load in with:
 ```{r}
-load('mnist.rda')
+load('data/mnist.rda')
 dim(train_mnist)
 dim(test_mnist)
 ```
@@ -358,10 +358,11 @@ model <- mx.model.FeedForward.create(net, train_mnist_iter, ctx=mx.cpu(),
 Neural Network
 ========================================================
 
-There's `mx.mlp` for fast model definition and training with mlp.
+Fast model definition and training
 
 ```{r, eval=FALSE}
-model <- mx.mlp(train_mnist_iter, hidden_node=c(256), out_node=10, ctx=mx.cpu(), 
+model <- mx.mlp(train_mnist_iter, hidden_node=c(256),
+                out_node=10, ctx=mx.cpu(), 
                 eval.metric=mx.metric.accuracy,
                 eval.data=test_mnist_iter,
                 learning.rate=0.01, num.round=10)
@@ -373,12 +374,20 @@ Neural Network
 How about we add more hidden layers?
 
 ```{r, eval=FALSE}
-model <- mx.mlp(train_mnist_iter, hidden_node=c(256, 100, 50), out_node=10, ctx=mx.cpu(), 
+model <- mx.mlp(train_mnist_iter, hidden_node=c(256, 100, 50),
+                out_node=10, ctx=mx.cpu(), 
                 eval.metric=mx.metric.accuracy,
                 eval.data=test_mnist_iter,
-                learning.rate=0.1, num.round=10)
+                learning.rate=0.01, num.round=10)
 ```
 
+Practice
+========================================================
+
+Tune parametes and change network structures
+
+- `mx.mlp`
+- `mx.model.FeedForward.create`
 
 FashionMNIST
 ========================================================
@@ -393,15 +402,9 @@ FashionMNIST
 FashionMNIST
 ========================================================
 
-Download with:
-
-```{r, eval=FALSE}
-download.file('https://apache-mxnet.s3-accelerate.dualstack.amazonaws.com/')
-```
-
 Load in with:
 ```{r}
-load('fmnist.rda')
+load('data/fmnist.rda')
 dim(train_fmnist)
 dim(test_fmnist)
 ```
@@ -451,7 +454,9 @@ Next, we try to train with a LeNet:
 
 ![](./img/lenet.png)
 
-We use two new building blocks: convolutional and pooling layers.
+Two new building blocks: 
+- convolutional layer
+- pooling layers
 
 Neural Network
 ========================================================
@@ -517,7 +522,7 @@ test_fmnist_iter <- mx.io.arrayiter(x.test, y.test, batch.size = 128, shuffle = 
 Neural Network
 ========================================================
 
-Dive deep into LeNet
+A slow training epoch on CPU:
 
 ```{r, eval=F}
 model = mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.cpu(),
@@ -588,6 +593,11 @@ model = mx.model.FeedForward.create(lenet, train_mnist_iter, ctx=mx.gpu(),
                                     initializer = mx.init.Xavier(),
                                     learning.rate=0.1, num.round=10)
 ```
+
+Practice
+========================================================
+
+Ideas on the parameter tuning
 
 Neural Network
 ========================================================
@@ -742,10 +752,20 @@ synset <- readLines('model/synset.txt')
 print(paste0("Predicted Top-classes: ", synset[max.idx]))
 ```
 
-Pre-trained Model
+Practice
 ========================================================
 
-Try it now!
+Try with non-standard pre-processing
+
+Practice
+========================================================
+
+Try it with your images
+
+Practice
+========================================================
+
+Try another model
 
 What Else?
 ========================================================
