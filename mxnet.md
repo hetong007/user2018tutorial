@@ -7,19 +7,19 @@ autosize: true
 Outline
 ========================================================
 
-- Introduction
 - Configuration
-- ndarray: data type
-- Train your Network
-- Fine-tune
+- NDArray
+- Train with MNIST
+- Train with Fashion-MNIST
+- Pre-trained Models
 
-Introduction
+mxnet
 ========================================================
 
 `mxnet` is a package for
 
 - Deep Learning
-- GPU accelerating computation
+- GPU accelerated computation
 
 Configuration
 ========================================================
@@ -50,7 +50,20 @@ install.packages("mxnet")
 Configuration
 ========================================================
 
-*I don't want to waste my 1080Ti!*
+Note:
+
+- On OS X, you may need to install **opencv** and **openblas** by
+
+```
+brew install opencv openblas
+```
+
+in your terminal.
+
+Configuration
+========================================================
+
+*I don't want to waste my expensive 1080Ti!*
 
 - Linux
   - Follow our [official guide](https://mxnet.incubator.apache.org/install/index.html?platform=Linux&language=R&processor=GPU) on GPU building
@@ -83,7 +96,7 @@ Test your installation with GPU
 
 
 ```r
-a <- mx.nd.ones(c(3, 2), ctx=mx.gpu())
+a <- mx.nd.ones(c(3, 2), ctx = mx.gpu())
 b <- a * 2 + 1
 b
 ```
@@ -141,7 +154,7 @@ Math
 
 
 ```r
-mx.nd.log(a+10)
+mx.nd.log(a + 10)
 ```
 
 ```
@@ -193,7 +206,7 @@ NDArray
 
 
 ```r
-a <- mx.nd.ones(c(2,3), ctx=mx.gpu())
+a <- mx.nd.ones(c(2, 3), ctx = mx.gpu())
 b <- a * 2 + 1
 b
 class(b)
@@ -213,7 +226,7 @@ NDArray
 
 
 ```r
-mat <- matrix(runif(4000*4000), 4000, 4000)
+mat <- matrix(runif(4000 * 4000), 4000, 4000)
 system.time({
   res_mat <- mat %*% mat
 })
@@ -221,7 +234,7 @@ system.time({
 
 ```
    user  system elapsed 
- 12.312   0.008  12.321 
+ 12.124   0.184  12.311 
 ```
 
 NDArray
@@ -240,7 +253,7 @@ system.time({
 
 ```
    user  system elapsed 
-  6.664   0.128   6.769 
+  6.804   0.116   6.900 
 ```
 
 ```r
@@ -291,7 +304,7 @@ system.time({
 
 ```
    user  system elapsed 
-  0.000   0.000   0.001 
+      0       0       0 
 ```
 
 ```r
@@ -303,7 +316,7 @@ system.time({
 
 ```
    user  system elapsed 
-  6.516   0.064   6.559 
+  6.512   0.068   6.558 
 ```
 
 ```r
@@ -426,7 +439,7 @@ Let's take a look!
 ```r
 plot_mnist <- function(dat, ind) {
       mat <- matrix(as.numeric(dat[ind,-1]), 28, 28)
-      image(mat[,28:1], axes=FALSE, col=grey(seq(0, 1, length = 256)))
+      image(mat[,28:1], axes = FALSE, col = grey(seq(0, 1, length = 256)))
 }
 plot_mnist(train_mnist, 19)
 ```
@@ -440,19 +453,21 @@ Prepare data
 
 
 ```r
-x <- train_mnist[,-1]
-y <- train_mnist[,1]
+x <- train_mnist[, -1]
+y <- train_mnist[, 1]
 
-x.test <- test_mnist[,-1]
-y.test <- test_mnist[,1]
+x.test <- test_mnist[, -1]
+y.test <- test_mnist[, 1]
 ```
 
 Define input iterator
 
 
 ```r
-train_mnist_iter <- mx.io.arrayiter(t(x), y, batch.size = 128, shuffle = TRUE)
-test_mnist_iter <- mx.io.arrayiter(t(x.test), y.test, batch.size = 128, shuffle = FALSE)
+train_mnist_iter <- mx.io.arrayiter(t(x), y, batch.size = 128,
+                                    shuffle = TRUE)
+test_mnist_iter <- mx.io.arrayiter(t(x.test), y.test, batch.size = 128,
+                                   shuffle = FALSE)
 ```
 
 Neural Network
@@ -463,20 +478,24 @@ Let's build a MLP with 256 hidden layers.
 
 ```r
 small_net = function() {
+  # incoming data
   data <- mx.symbol.Variable("data")
   
+  # hidden layer
   fc1 <- mx.symbol.FullyConnected(data, num_hidden = 256)
+  # activation
   act <- mx.symbol.Activation(fc1, act_type = 'tanh')
   
+  # output layer
   fc2 <- mx.symbol.FullyConnected(act, num_hidden = 10)
+  
+  # loss function
   net <- mx.symbol.SoftmaxOutput(data=fc2)
   return(net)
 }
-
-net = small_net()
 ```
 
-It's a `784 -> 256 -> 10` MLP model.
+It's a $784 \rightarrow 256 \rightarrow 10$ MLP model.
 
 Neural Network
 ========================================================
@@ -485,10 +504,13 @@ Train with our net:
 
 
 ```r
-model <- mx.model.FeedForward.create(net, train_mnist_iter, ctx=mx.cpu(),
-                                     eval.metric=mx.metric.accuracy,
-                                     eval.data=test_mnist_iter,
-                                     learning.rate=0.01, num.round=10)
+net <- small_net()
+model <- mx.model.FeedForward.create(net,
+                                     train_mnist_iter,
+                                     ctx = mx.cpu(),
+                                     eval.metric = mx.metric.accuracy,
+                                     eval.data = test_mnist_iter,
+                                     learning.rate = 0.01, num.round = 10)
 ```
 
 Neural Network
@@ -499,10 +521,10 @@ Fast model definition and training
 
 ```r
 model <- mx.mlp(train_mnist_iter, hidden_node=c(256),
-                out_node=10, ctx=mx.cpu(), 
-                eval.metric=mx.metric.accuracy,
-                eval.data=test_mnist_iter,
-                learning.rate=0.01, num.round=10)
+                out_node = 10, ctx = mx.cpu(), 
+                eval.metric = mx.metric.accuracy,
+                eval.data = test_mnist_iter,
+                learning.rate = 0.01, num.round = 10)
 ```
 
 Neural Network
@@ -512,11 +534,11 @@ How about we add more hidden layers?
 
 
 ```r
-model <- mx.mlp(train_mnist_iter, hidden_node=c(256, 100, 50),
-                out_node=10, ctx=mx.cpu(), 
-                eval.metric=mx.metric.accuracy,
-                eval.data=test_mnist_iter,
-                learning.rate=0.01, num.round=10)
+model <- mx.mlp(train_mnist_iter, hidden_node = c(256, 100, 50),
+                out_node = 10, ctx = mx.cpu(), 
+                eval.metric = mx.metric.accuracy,
+                eval.data = test_mnist_iter,
+                learning.rate = 0.01, num.round = 10)
 ```
 
 Practice
@@ -584,8 +606,10 @@ y <- train_fmnist[,1]
 x.test <- test_fmnist[,-1]
 y.test <- test_fmnist[,1]
 
-train_fmnist_iter <- mx.io.arrayiter(t(x), y, batch.size = 128, shuffle = TRUE)
-test_fmnist_iter <- mx.io.arrayiter(t(x.test), y.test, batch.size = 128, shuffle = FALSE)
+train_fmnist_iter <- mx.io.arrayiter(t(x), y, batch.size = 128,
+                                     shuffle = TRUE)
+test_fmnist_iter <- mx.io.arrayiter(t(x.test), y.test, batch.size = 128,
+                                    shuffle = FALSE)
 ```
 
 Neural Network
@@ -595,11 +619,11 @@ First we train with the same MLP
 
 
 ```r
-model <- mx.mlp(train_fmnist_iter, hidden_node=c(256),
-                out_node=10, ctx=mx.cpu(), 
-                eval.metric=mx.metric.accuracy,
-                eval.data=test_fmnist_iter,
-                learning.rate=0.01, num.round=10)
+model <- mx.mlp(train_fmnist_iter, hidden_node = c(256),
+                out_node = 10, ctx = mx.cpu(), 
+                eval.metric = mx.metric.accuracy,
+                eval.data = test_fmnist_iter,
+                learning.rate = 0.01, num.round = 10)
 ```
 
 Neural Network
@@ -623,24 +647,24 @@ LeNet in `mxnet`
 get.lenet <- function() {
   # input
   data <- mx.symbol.Variable('data')
-  # first conv
+  # first convolution
   conv1 <- mx.symbol.Convolution(data=data, kernel=c(5,5), num_filter=6)
   relu1 <- mx.symbol.Activation(data=conv1, act_type="relu")
   pool1 <- mx.symbol.Pooling(data=relu1, pool_type="max",
                              kernel=c(2,2), stride=c(2,2))
-  # second conv
-  conv2 <- mx.symbol.Convolution(data=pool1, kernel=c(3,3), num_filter=16)
+  # second convolution
+  conv2 <- mx.symbol.Convolution(data=pool1, kernel=c(3, 3), num_filter=16)
   relu2 <- mx.symbol.Activation(data=conv2, act_type="relu")
   pool2 <- mx.symbol.Pooling(data=relu2, pool_type="max",
-                             kernel=c(2,2), stride=c(2,2))
-  # first fullc
+                             kernel=c(2, 2), stride=c(2, 2))
+  # first fully connected
   flatten <- mx.symbol.Flatten(data=pool2)
   fc1 <- mx.symbol.FullyConnected(data=flatten, num_hidden=120)
   relu3 <- mx.symbol.Activation(data=fc1, act_type="relu")
-  # second fullc
+  # second fully connected
   fc2 <- mx.symbol.FullyConnected(data=relu3, num_hidden=84)
   relu4 <- mx.symbol.Activation(data=fc2, act_type="relu")
-  # final fullc
+  # final fully connected
   fc3 <- mx.symbol.FullyConnected(data=relu4, num_hidden=10)
   # loss
   lenet <- mx.symbol.SoftmaxOutput(data=fc3)
@@ -651,27 +675,29 @@ get.lenet <- function() {
 Neural Network
 ========================================================
 
-Before we train model, we need to re-prepare our data:
+Before we train model, we need to re-process our data:
 
-1. Map pixel values from [0, 255] into [0, 1]
+1. Map pixel values from $[0, 255]$ into $[0, 1]$
 2. Reshape data into 28x28x1
 
 
 ```r
-x <- train_fmnist[,-1]
-y <- train_fmnist[,1]
+x <- train_fmnist[, -1]
+y <- train_fmnist[, 1]
 
-x.test <- test_fmnist[,-1]
-y.test <- test_fmnist[,1]
+x.test <- test_fmnist[, -1]
+y.test <- test_fmnist[, 1]
 
 # transpose and reshape
-x <- t(x/255)
+x <- t(x / 255)
 dim(x) <- c(28, 28, 1, ncol(x))
-x.test <- t(x.test/255)
+x.test <- t(x.test / 255)
 dim(x.test) <- c(28, 28, 1, ncol(x.test))
 
-train_fmnist_iter <- mx.io.arrayiter(x, y, batch.size = 128, shuffle = TRUE)
-test_fmnist_iter <- mx.io.arrayiter(x.test, y.test, batch.size = 128, shuffle = FALSE)
+train_fmnist_iter <- mx.io.arrayiter(x, y, batch.size = 128, 
+                                     shuffle = TRUE)
+test_fmnist_iter <- mx.io.arrayiter(x.test, y.test, batch.size = 128,
+                                    shuffle = FALSE)
 ```
 
 Neural Network
@@ -681,12 +707,13 @@ One slow training epoch on CPU:
 
 
 ```r
-lenet = get.lenet()
-model <- mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.cpu(),
-                                     eval.metric=mx.metric.accuracy,
-                                     eval.data=test_fmnist_iter,
+lenet <- get.lenet()
+model <- mx.model.FeedForward.create(lenet, train_fmnist_iter,
+                                     ctx = mx.cpu(),
+                                     eval.metric = mx.metric.accuracy,
+                                     eval.data = test_fmnist_iter,
                                      initializer = mx.init.Xavier(),
-                                     learning.rate=0.1, num.round=1)
+                                     learning.rate = 0.1, num.round = 1)
 ```
 
 Neural Network
@@ -696,11 +723,12 @@ Training time on GPU:
 
 
 ```r
-model <- mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.gpu(),
-                                     eval.metric=mx.metric.accuracy,
-                                     eval.data=test_fmnist_iter,
+model <- mx.model.FeedForward.create(lenet, train_fmnist_iter,
+                                     ctx = mx.gpu(),
+                                     eval.metric = mx.metric.accuracy,
+                                     eval.data = test_fmnist_iter,
                                      initializer = mx.init.Xavier(),
-                                     learning.rate=0.1, num.round=10)
+                                     learning.rate = 0.1, num.round = 10)
 ```
 
 
@@ -711,11 +739,12 @@ How about we tune some parameters?
 
 
 ```r
-model <- mx.model.FeedForward.create(lenet, train_fmnist_iter, ctx=mx.gpu(),
-                                     eval.metric=mx.metric.accuracy,
-                                     eval.data=test_fmnist_iter,
+model <- mx.model.FeedForward.create(lenet, train_fmnist_iter,
+                                     ctx = mx.gpu(),
+                                     eval.metric = mx.metric.accuracy,
+                                     eval.data = test_fmnist_iter,
                                      initializer = mx.init.Xavier(),
-                                     learning.rate=0.01, num.round=10)
+                                     learning.rate = 0.01, num.round = 10)
 ```
 
 Neural Network
@@ -737,8 +766,10 @@ dim(x) <- c(28, 28, 1, ncol(x))
 x.test <- t(x.test/255)
 dim(x.test) <- c(28, 28, 1, ncol(x.test))
 
-train_mnist_iter <- mx.io.arrayiter(x, y, batch.size = 128, shuffle = TRUE)
-test_mnist_iter <- mx.io.arrayiter(x.test, y.test, batch.size = 128, shuffle = FALSE)
+train_mnist_iter <- mx.io.arrayiter(x, y, batch.size = 128,
+                                    shuffle = TRUE)
+test_mnist_iter <- mx.io.arrayiter(x.test, y.test, batch.size = 128,
+                                   shuffle = FALSE)
 ```
 
 Neural Network
@@ -748,11 +779,12 @@ Why do we say MNIST is too simple?
 
 
 ```r
-model <- mx.model.FeedForward.create(lenet, train_mnist_iter, ctx=mx.gpu(),
-                                     eval.metric=mx.metric.accuracy,
-                                     eval.data=test_mnist_iter,
+model <- mx.model.FeedForward.create(lenet, train_mnist_iter,
+                                     ctx = mx.gpu(),
+                                     eval.metric = mx.metric.accuracy,
+                                     eval.data = test_mnist_iter,
                                      initializer = mx.init.Xavier(),
-                                     learning.rate=0.1, num.round=10)
+                                     learning.rate = 0.1, num.round = 10)
 ```
 
 Practice
@@ -850,13 +882,13 @@ Image Preprocessing
 
 
 ```r
-normalize.image <-function(im, mean_vec, std_vec) {
+normalize.image <-function(im, mean_vec) {
   arr <- as.array(im)
   dim(arr) <- dim(arr)[-3]
   arr = arr * 255
   # substract the mean
   for (i in 1:length(mean_vec)) {
-    arr[,,i] = (arr[,,i]-mean_vec[i])/std_vec[i]
+    arr[, , i] = (arr[, , i] - mean_vec[i])
   }
   # Reshape to format needed by mxnet (width, height, channel, num)
   dim(arr) <- c(dim(arr), 1)
@@ -884,7 +916,7 @@ Cropped image
 
 
 ```r
-im_resized = resize.image(im, 224)
+im_resized <- resize.image(im, 224)
 plot(im_resized)
 ```
 
@@ -897,7 +929,7 @@ Normalize image
 
 
 ```r
-im_normed = normalize.image(im_resized, c(123.68, 116.779, 103.939), c(1, 1, 1))
+im_normed <- normalize.image(im_resized, c(123.68, 116.779, 103.939))
 ```
 
 Pre-trained Model
@@ -907,7 +939,7 @@ Let's test!
 
 
 ```r
-prob <- predict(model, X=im_normed)
+prob <- predict(model, X = im_normed)
 dim(prob)
 ```
 
@@ -919,7 +951,7 @@ The top-5 classes
 
 
 ```r
-max.idx <- order(prob[,1], decreasing = TRUE)[1:5]
+max.idx <- order(prob[, 1], decreasing = TRUE)[1:5]
 max.idx
 ```
 

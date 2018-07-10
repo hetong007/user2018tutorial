@@ -51,6 +51,7 @@ Advantages
 - Interpretable
 - Efficient
 - Accurate
+- No need to normalize
 
 Boosting
 ========================================================
@@ -70,33 +71,13 @@ Go beyond a single tree
 Boosting
 ========================================================
 
-Additive boosting
-
-$$ r_1 = y - f_1(x) $$
-
-Boosting
-========================================================
-
-Additive boosting
-
-$$ r_2 = y - f_1(x) - f_2(x) = r_1 - f_2(x) $$
+- Add simultaneously
+  - random forest
+- Add **in sequential**
 
 Boosting
 ========================================================
-
-Additive boosting
-
-$$ r_3 = y - f_1(x) - f_2(x) - f_3(x) = r_2 - f_3(x) $$
-
-Boosting
-========================================================
-
-Additive boosting
-
-$$\cdots$$
-
-Boosting
-========================================================
+incremental: true
 
 Iterative algorithm
 
@@ -107,7 +88,9 @@ Iterative algorithm
   - predict $r_1$ with $f_2(x)$
   - calculate $r_2 = r_1 - f_2(x)$
 - ...
-- $\sum_i f_i(x)$ is better than $f_1(x)$
+
+
+Every new $f_i(x)$ improves from $f_{i-1}(x)$
 
 Boosting
 ========================================================
@@ -118,24 +101,29 @@ One step further
 - ...
 - replace $r_T$ with $L(y, \sum_t^T f_t(x))$
 
-$$L(y, \sum_t^T f_t(x)) = L(y, \sum_t^{T-1} f_t(x) + f_T(x)) \approx L(y, \sum_t^{T-1} f_t(x)) + g(x)f_t(x)$$
+$$
+\begin{align}
+L[y, \sum_t^T f_t(x)] & = L[y, \sum_t^{T-1} f_t(x) + f_T(x)] \\
+& \approx L[y, \sum_t^{T-1} f_t(x)] + g(x)f_T(x)
+\end{align}
+$$
 
 Boosting
 ========================================================
 
 Model
 
-$$ pred = \sum_{t=1}^{T} \cdot f_t(x) $$
+$$ pred = \sum_{t=1}^{T} f_t(x) $$
 
 Objective
 
-$$ Obj =  L(\sum_{t=1}^{T} f_t(x), y) $$
+$$ Obj =  L[\sum_{t=1}^{T} f_t(x), y] $$
 
 
 Why XGBoost
 ========================================================
 
-- $L_1$ and $L_2$ regularization
+- Regularization
 
 $$ Obj = \sum_{t=1}^{T} L(f_t(x), y) + \Omega(f_t)$$
 
@@ -171,22 +159,12 @@ ind <- sample(nrow(train_hr))
 train_ind <- ind[1:10000]
 test_ind <- ind[10001:14999]
 
-x <- train_hr[train_ind,-1]
+x <- train_hr[train_ind, -1]
 # zero-based class label
-y <- train_hr[train_ind,1]
+y <- train_hr[train_ind, 1]
 
-x.test <- train_hr[test_ind,-1]
-y.test <- train_hr[test_ind,1]
-```
-
-Training
-========================================================
-
-define parameters
-
-```{r}
-param <- list("objective" = "binary:logistic",
-              "eval_metric" = "auc")
+x.test <- train_hr[test_ind, -1]
+y.test <- train_hr[test_ind, 1]
 ```
 
 Training
@@ -194,7 +172,17 @@ Training
 
 Cross Validation
 
+![](./img/cv.png)
+
+Training
+========================================================
+
+Cross Validation
+
 ```{r}
+param <- list("objective" = "binary:logistic",
+              "eval_metric" = "auc")
+
 bst.cv <- xgb.cv(param = param, data = x, label = y, 
                  nfold = 3, nrounds = 10)
 ```
@@ -216,6 +204,20 @@ Training
 - Randomness: `subsample`, `colsample_bytree`
 - Penalty: `gamma`, `lambda`
 
+Training
+========================================================
+
+Cross Validation
+
+```{r}
+param <- list("objective" = "binary:logistic",
+              "eval_metric" = "auc",
+              "max_depth" = 2, eta = 0.5)
+
+bst.cv <- xgb.cv(param = param, data = x, label = y, 
+                 nfold = 3, nrounds = 10)
+```
+
 Practice
 ========================================================
 
@@ -225,6 +227,8 @@ Training
 ========================================================
 
 ```{r}
+param <- list("objective" = "binary:logistic",
+              "eval_metric" = "auc")
 model <- xgboost(param = param, data = x, label = y, nrounds = 10)
 ```
 
@@ -236,12 +240,15 @@ predict
 ```{r}
 pred <- predict(model, x.test)
 length(pred)
+
+require(AUC)
+auc(roc(pred, as.factor(y.test)))
 ```
 
 Practice
 ========================================================
 
-Compare the evaluation on test set and cross validation.
+Compare cross validation and test set.
 
 Interpretation
 ========================================================
@@ -392,7 +399,7 @@ Underfitting
 Practice
 ========================================================
 
-Tune your parameters and hit mlogloss 0.4!
+Tune your parameters and hit mlogloss 0.5!
 
 Parameter Tuning
 ========================================================
@@ -436,7 +443,7 @@ params <- list(grow_policy = 'lossguide')
 Practice
 ========================================================
 
-Use loss-wise and histogram to speed training up
+Use histogram to speed training up
 
 About
 ========================================================

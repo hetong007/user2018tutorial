@@ -53,6 +53,7 @@ Advantages
 - Interpretable
 - Efficient
 - Accurate
+- No need to normalize
 
 Boosting
 ========================================================
@@ -72,33 +73,13 @@ Go beyond a single tree
 Boosting
 ========================================================
 
-Additive boosting
-
-$$ r_1 = y - f_1(x) $$
-
-Boosting
-========================================================
-
-Additive boosting
-
-$$ r_2 = y - f_1(x) - f_2(x) = r_1 - f_2(x) $$
+- Add simultaneously
+  - random forest
+- Add **in sequential**
 
 Boosting
 ========================================================
-
-Additive boosting
-
-$$ r_3 = y - f_1(x) - f_2(x) - f_3(x) = r_2 - f_3(x) $$
-
-Boosting
-========================================================
-
-Additive boosting
-
-$$\cdots$$
-
-Boosting
-========================================================
+incremental: true
 
 Iterative algorithm
 
@@ -109,7 +90,9 @@ Iterative algorithm
   - predict $r_1$ with $f_2(x)$
   - calculate $r_2 = r_1 - f_2(x)$
 - ...
-- $\sum_i f_i(x)$ is better than $f_1(x)$
+
+
+Every new $f_i(x)$ improves from $f_{i-1}(x)$
 
 Boosting
 ========================================================
@@ -120,24 +103,29 @@ One step further
 - ...
 - replace $r_T$ with $L(y, \sum_t^T f_t(x))$
 
-$$L(y, \sum_t^T f_t(x)) = L(y, \sum_t^{T-1} f_t(x) + f_T(x)) \approx L(y, \sum_t^{T-1} f_t(x)) + g(x)f_t(x)$$
+$$
+\begin{align}
+L[y, \sum_t^T f_t(x)] & = L[y, \sum_t^{T-1} f_t(x) + f_T(x)] \\
+& \approx L[y, \sum_t^{T-1} f_t(x)] + g(x)f_T(x)
+\end{align}
+$$
 
 Boosting
 ========================================================
 
 Model
 
-$$ pred = \sum_{t=1}^{T} \cdot f_t(x) $$
+$$ pred = \sum_{t=1}^{T} f_t(x) $$
 
 Objective
 
-$$ Obj =  L(\sum_{t=1}^{T} f_t(x), y) $$
+$$ Obj =  L[\sum_{t=1}^{T} f_t(x), y] $$
 
 
 Why XGBoost
 ========================================================
 
-- $L_1$ and $L_2$ regularization
+- Regularization
 
 $$ Obj = \sum_{t=1}^{T} L(f_t(x), y) + \Omega(f_t)$$
 
@@ -179,24 +167,20 @@ ind <- sample(nrow(train_hr))
 train_ind <- ind[1:10000]
 test_ind <- ind[10001:14999]
 
-x <- train_hr[train_ind,-1]
+x <- train_hr[train_ind, -1]
 # zero-based class label
-y <- train_hr[train_ind,1]
+y <- train_hr[train_ind, 1]
 
-x.test <- train_hr[test_ind,-1]
-y.test <- train_hr[test_ind,1]
+x.test <- train_hr[test_ind, -1]
+y.test <- train_hr[test_ind, 1]
 ```
 
 Training
 ========================================================
 
-define parameters
+Cross Validation
 
-
-```r
-param <- list("objective" = "binary:logistic",
-              "eval_metric" = "auc")
-```
+![](./img/cv.png)
 
 Training
 ========================================================
@@ -205,21 +189,24 @@ Cross Validation
 
 
 ```r
+param <- list("objective" = "binary:logistic",
+              "eval_metric" = "auc")
+
 bst.cv <- xgb.cv(param = param, data = x, label = y, 
                  nfold = 3, nrounds = 10)
 ```
 
 ```
-[1]	train-auc:0.975808+0.003401	test-auc:0.972281+0.002864 
-[2]	train-auc:0.977659+0.002517	test-auc:0.972277+0.001352 
-[3]	train-auc:0.982610+0.002353	test-auc:0.975647+0.003157 
-[4]	train-auc:0.984508+0.001708	test-auc:0.978080+0.002698 
-[5]	train-auc:0.986067+0.001547	test-auc:0.979804+0.003576 
-[6]	train-auc:0.986875+0.001302	test-auc:0.981943+0.003359 
-[7]	train-auc:0.987745+0.001235	test-auc:0.982114+0.003335 
-[8]	train-auc:0.988681+0.001241	test-auc:0.983029+0.003496 
-[9]	train-auc:0.989076+0.001266	test-auc:0.982995+0.003373 
-[10]	train-auc:0.991163+0.001137	test-auc:0.983716+0.003266 
+[1]	train-auc:0.976770+0.002266	test-auc:0.973146+0.005496 
+[2]	train-auc:0.980403+0.001100	test-auc:0.977338+0.005238 
+[3]	train-auc:0.984626+0.000995	test-auc:0.981401+0.004794 
+[4]	train-auc:0.985335+0.001156	test-auc:0.981677+0.004978 
+[5]	train-auc:0.986564+0.000795	test-auc:0.982101+0.004820 
+[6]	train-auc:0.987528+0.000766	test-auc:0.982439+0.004893 
+[7]	train-auc:0.988716+0.001600	test-auc:0.984122+0.003838 
+[8]	train-auc:0.989346+0.001698	test-auc:0.985302+0.003078 
+[9]	train-auc:0.989780+0.001262	test-auc:0.985503+0.003064 
+[10]	train-auc:0.991195+0.001115	test-auc:0.986113+0.003252 
 ```
 
 Training
@@ -235,16 +222,16 @@ bst.cv
 ```
 ##### xgb.cv 3-folds
  iter train_auc_mean train_auc_std test_auc_mean test_auc_std
-    1      0.9758080   0.003401134     0.9722810  0.002864236
-    2      0.9776590   0.002517461     0.9722773  0.001351559
-    3      0.9826100   0.002352536     0.9756473  0.003157445
-    4      0.9845077   0.001707747     0.9780800  0.002698321
-    5      0.9860673   0.001547118     0.9798037  0.003575691
-    6      0.9868753   0.001302422     0.9819427  0.003359254
-    7      0.9877453   0.001234834     0.9821143  0.003334505
-    8      0.9886807   0.001241175     0.9830287  0.003495935
-    9      0.9890757   0.001265941     0.9829947  0.003373196
-   10      0.9911630   0.001137177     0.9837160  0.003266101
+    1      0.9767697  0.0022658556     0.9731460  0.005496047
+    2      0.9804027  0.0011004939     0.9773377  0.005237826
+    3      0.9846260  0.0009953214     0.9814010  0.004794359
+    4      0.9853347  0.0011563328     0.9816773  0.004977944
+    5      0.9865637  0.0007945121     0.9821010  0.004819741
+    6      0.9875280  0.0007657950     0.9824390  0.004892712
+    7      0.9887157  0.0016001353     0.9841217  0.003837557
+    8      0.9893457  0.0016979078     0.9853023  0.003078282
+    9      0.9897800  0.0012615247     0.9855030  0.003063716
+   10      0.9911950  0.0011148390     0.9861127  0.003251740
 ```
 
 Training
@@ -254,6 +241,34 @@ Training
 - Depth of trees: `max_depth`, `min_child_weight`
 - Randomness: `subsample`, `colsample_bytree`
 - Penalty: `gamma`, `lambda`
+
+Training
+========================================================
+
+Cross Validation
+
+
+```r
+param <- list("objective" = "binary:logistic",
+              "eval_metric" = "auc",
+              "max_depth" = 2, eta = 0.5)
+
+bst.cv <- xgb.cv(param = param, data = x, label = y, 
+                 nfold = 3, nrounds = 10)
+```
+
+```
+[1]	train-auc:0.907628+0.000901	test-auc:0.907609+0.001853 
+[2]	train-auc:0.946699+0.001286	test-auc:0.946669+0.002602 
+[3]	train-auc:0.940740+0.001273	test-auc:0.940706+0.002553 
+[4]	train-auc:0.960218+0.001264	test-auc:0.960110+0.003751 
+[5]	train-auc:0.961573+0.001228	test-auc:0.961502+0.003411 
+[6]	train-auc:0.966205+0.001323	test-auc:0.965418+0.002775 
+[7]	train-auc:0.968415+0.001577	test-auc:0.967686+0.003546 
+[8]	train-auc:0.971716+0.002074	test-auc:0.970570+0.003377 
+[9]	train-auc:0.974072+0.001779	test-auc:0.973349+0.003399 
+[10]	train-auc:0.975533+0.001501	test-auc:0.974795+0.003633 
+```
 
 Practice
 ========================================================
@@ -265,20 +280,22 @@ Training
 
 
 ```r
+param <- list("objective" = "binary:logistic",
+              "eval_metric" = "auc")
 model <- xgboost(param = param, data = x, label = y, nrounds = 10)
 ```
 
 ```
-[1]	train-auc:0.975602 
-[2]	train-auc:0.979455 
-[3]	train-auc:0.983702 
-[4]	train-auc:0.985109 
-[5]	train-auc:0.986201 
-[6]	train-auc:0.986646 
-[7]	train-auc:0.987687 
-[8]	train-auc:0.988145 
-[9]	train-auc:0.988687 
-[10]	train-auc:0.990535 
+[1]	train-auc:0.977893 
+[2]	train-auc:0.981246 
+[3]	train-auc:0.983074 
+[4]	train-auc:0.985692 
+[5]	train-auc:0.986406 
+[6]	train-auc:0.987143 
+[7]	train-auc:0.988062 
+[8]	train-auc:0.989032 
+[9]	train-auc:0.989527 
+[10]	train-auc:0.990394 
 ```
 
 Training
@@ -296,10 +313,19 @@ length(pred)
 [1] 4999
 ```
 
+```r
+require(AUC)
+auc(roc(pred, as.factor(y.test)))
+```
+
+```
+[1] 0.9872824
+```
+
 Practice
 ========================================================
 
-Compare the evaluation on test set and cross validation.
+Compare cross validation and test set.
 
 Interpretation
 ========================================================
@@ -313,15 +339,15 @@ importance
 ```
 
 ```
-                Feature         Gain        Cover   Frequency
-1:   satisfaction_level 0.5136536137 0.2798328773 0.224489796
-2:   time_spend_company 0.1672146194 0.2236614448 0.116618076
-3:      last_evaluation 0.1340233220 0.0782284751 0.163265306
-4:       number_project 0.1081485857 0.2321557423 0.148688047
-5: average_montly_hours 0.0742442506 0.1772625850 0.306122449
-6:               salary 0.0013053471 0.0014265538 0.011661808
-7:                sales 0.0011808129 0.0067436483 0.026239067
-8:        Work_accident 0.0002294486 0.0006886734 0.002915452
+                Feature        Gain        Cover   Frequency
+1:   satisfaction_level 0.512249611 0.2844040059 0.203488372
+2:   time_spend_company 0.157149217 0.1909915389 0.098837209
+3:      last_evaluation 0.127718539 0.0796857516 0.168604651
+4:       number_project 0.115102440 0.2449528968 0.151162791
+5: average_montly_hours 0.080595803 0.1777846195 0.276162791
+6:               salary 0.003609687 0.0055429305 0.029069767
+7:                sales 0.002905171 0.0157608937 0.066860465
+8:        Work_accident 0.000669533 0.0008773632 0.005813953
 ```
 
 Interpretation
@@ -432,11 +458,11 @@ bst.cv <- xgb.cv(param = param, data = x, label = y,
 ```
 
 ```
-[1]	train-mlogloss:1.541981+0.001387	test-mlogloss:1.555663+0.004200 
-[2]	train-mlogloss:1.284259+0.002486	test-mlogloss:1.305575+0.004844 
-[3]	train-mlogloss:1.115395+0.002894	test-mlogloss:1.143237+0.005966 
-[4]	train-mlogloss:0.994528+0.003006	test-mlogloss:1.028737+0.006407 
-[5]	train-mlogloss:0.902859+0.002493	test-mlogloss:0.942097+0.007646 
+[1]	train-mlogloss:1.540175+0.001242	test-mlogloss:1.554700+0.001781 
+[2]	train-mlogloss:1.283062+0.002082	test-mlogloss:1.306786+0.000599 
+[3]	train-mlogloss:1.113639+0.002230	test-mlogloss:1.143803+0.000844 
+[4]	train-mlogloss:0.992191+0.001430	test-mlogloss:1.027571+0.001329 
+[5]	train-mlogloss:0.901522+0.001087	test-mlogloss:0.941599+0.001631 
 ```
 
 Parameter Tuning
@@ -487,7 +513,7 @@ Underfitting
 Practice
 ========================================================
 
-Tune your parameters and hit mlogloss 0.4!
+Tune your parameters and hit mlogloss 0.5!
 
 Parameter Tuning
 ========================================================
@@ -534,7 +560,7 @@ params <- list(grow_policy = 'lossguide')
 Practice
 ========================================================
 
-Use loss-wise and histogram to speed training up
+Use histogram to speed training up
 
 About
 ========================================================
