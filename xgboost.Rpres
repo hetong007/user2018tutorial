@@ -3,12 +3,14 @@ XGBoost
 author: Tong He 
 date: July 11th, 2018
 autosize: true
+width: 1920
+height: 1080
 
 Outline
 ========================================================
 
 - Introduction
-- A tree-based model
+- Boosting
 - Training
 - Interpretation
 - Parameter-Tuning
@@ -36,11 +38,6 @@ Base Model + Boosting
 Tree-based Model
 ========================================================
 
-![](./img/cart.png)
-
-Tree-based Model
-========================================================
-
 [Explanation in Animation](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/)
 
 Why Tree-based Model
@@ -60,13 +57,6 @@ What to do with a weak model?
 
 - Make it stronger!
 - **Ask for help from the others**
-
-Boosting
-========================================================
-
-Go beyond a single tree
-
-![](./img/twocart.png)
 
 Boosting
 ========================================================

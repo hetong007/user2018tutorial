@@ -3,6 +3,8 @@ mxnet
 author: Tong He 
 date: July 11th, 2018
 autosize: true
+width: 1920
+height: 1080
 
 Outline
 ========================================================
@@ -13,13 +15,9 @@ Outline
 - Train with Fashion-MNIST
 - Pre-trained Models
 
-mxnet
+Configuration
 ========================================================
-
-`mxnet` is a package for
-
-- Deep Learning
-- GPU accelerated computation
+type: section
 
 Configuration
 ========================================================
@@ -100,6 +98,10 @@ a <- mx.nd.ones(c(3, 2), ctx = mx.gpu())
 b <- a * 2 + 1
 b
 ```
+
+NDArray
+========================================================
+type: section
 
 NDArray
 ========================================================
@@ -234,7 +236,7 @@ system.time({
 
 ```
    user  system elapsed 
- 12.124   0.184  12.311 
+ 12.268   0.052  12.319 
 ```
 
 NDArray
@@ -253,7 +255,7 @@ system.time({
 
 ```
    user  system elapsed 
-  6.804   0.116   6.900 
+  6.724   0.072   6.780 
 ```
 
 ```r
@@ -316,7 +318,7 @@ system.time({
 
 ```
    user  system elapsed 
-  6.512   0.068   6.558 
+  6.520   0.064   6.566 
 ```
 
 ```r
@@ -328,13 +330,22 @@ system.time({
 
 ```
    user  system elapsed 
-  0.036   0.048   0.086 
+  0.044   0.044   0.085 
 ```
+
+Neural Network
+========================================================
+type: section
 
 Neural Network
 ========================================================
 
 ![](./img/multilayer-perceptron.png)
+
+Neural Network
+========================================================
+
+[Playground](https://playground.tensorflow.org/)
 
 Neural Network
 ========================================================
@@ -395,6 +406,10 @@ act <- mx.symbol.Activation(pool.type='relu')
 ```
 
 ![plot of chunk unnamed-chunk-17](mxnet-figure/unnamed-chunk-17-1.png)
+
+MNIST
+========================================================
+type: section
 
 MNIST
 ========================================================
@@ -470,7 +485,7 @@ test_mnist_iter <- mx.io.arrayiter(t(x.test), y.test, batch.size = 128,
                                    shuffle = FALSE)
 ```
 
-Neural Network
+MNIST
 ========================================================
 
 Let's build a MLP with 256 hidden layers.
@@ -497,7 +512,7 @@ small_net = function() {
 
 It's a $784 \rightarrow 256 \rightarrow 10$ MLP model.
 
-Neural Network
+MNIST
 ========================================================
 
 Train with our net:
@@ -513,7 +528,7 @@ model <- mx.model.FeedForward.create(net,
                                      learning.rate = 0.01, num.round = 10)
 ```
 
-Neural Network
+MNIST
 ========================================================
 
 Fast model definition and training
@@ -527,7 +542,7 @@ model <- mx.mlp(train_mnist_iter, hidden_node=c(256),
                 learning.rate = 0.01, num.round = 10)
 ```
 
-Neural Network
+MNIST
 ========================================================
 
 How about we add more hidden layers?
@@ -543,11 +558,16 @@ model <- mx.mlp(train_mnist_iter, hidden_node = c(256, 100, 50),
 
 Practice
 ========================================================
+type: sub-section
 
 Tune parametes and change network structures
 
 - `mx.mlp`
 - `mx.model.FeedForward.create`
+
+FashionMNIST
+========================================================
+type: section
 
 FashionMNIST
 ========================================================
@@ -600,11 +620,11 @@ Data preparation
 
 
 ```r
-x <- train_fmnist[,-1]
-y <- train_fmnist[,1]
+x <- train_fmnist[, -1]
+y <- train_fmnist[, 1]
 
-x.test <- test_fmnist[,-1]
-y.test <- test_fmnist[,1]
+x.test <- test_fmnist[, -1]
+y.test <- test_fmnist[, 1]
 
 train_fmnist_iter <- mx.io.arrayiter(t(x), y, batch.size = 128,
                                      shuffle = TRUE)
@@ -612,7 +632,7 @@ test_fmnist_iter <- mx.io.arrayiter(t(x.test), y.test, batch.size = 128,
                                     shuffle = FALSE)
 ```
 
-Neural Network
+FashionMNIST
 ========================================================
 
 First we train with the same MLP
@@ -626,7 +646,7 @@ model <- mx.mlp(train_fmnist_iter, hidden_node = c(256),
                 learning.rate = 0.01, num.round = 10)
 ```
 
-Neural Network
+FashionMNIST
 ========================================================
 
 Next, we try to train with a LeNet:
@@ -637,7 +657,7 @@ Two new building blocks:
 - convolutional layer
 - pooling layers
 
-Neural Network
+FashionMNIST
 ========================================================
 
 LeNet in `mxnet`
@@ -672,7 +692,7 @@ get.lenet <- function() {
 }
 ```
 
-Neural Network
+FashionMNIST
 ========================================================
 
 Before we train model, we need to re-process our data:
@@ -700,7 +720,7 @@ test_fmnist_iter <- mx.io.arrayiter(x.test, y.test, batch.size = 128,
                                     shuffle = FALSE)
 ```
 
-Neural Network
+FashionMNIST
 ========================================================
 
 One slow training epoch on CPU:
@@ -716,7 +736,7 @@ model <- mx.model.FeedForward.create(lenet, train_fmnist_iter,
                                      learning.rate = 0.1, num.round = 1)
 ```
 
-Neural Network
+FashionMNIST
 ========================================================
 
 Training time on GPU:
@@ -732,7 +752,7 @@ model <- mx.model.FeedForward.create(lenet, train_fmnist_iter,
 ```
 
 
-Neural Network
+FashionMNIST
 ========================================================
 
 How about we tune some parameters?
@@ -747,7 +767,7 @@ model <- mx.model.FeedForward.create(lenet, train_fmnist_iter,
                                      learning.rate = 0.01, num.round = 10)
 ```
 
-Neural Network
+FashionMNIST
 ========================================================
 
 Why do we say MNIST is too simple?
@@ -772,7 +792,7 @@ test_mnist_iter <- mx.io.arrayiter(x.test, y.test, batch.size = 128,
                                    shuffle = FALSE)
 ```
 
-Neural Network
+FashionMNIST
 ========================================================
 
 Why do we say MNIST is too simple?
@@ -787,12 +807,7 @@ model <- mx.model.FeedForward.create(lenet, train_mnist_iter,
                                      learning.rate = 0.1, num.round = 10)
 ```
 
-Practice
-========================================================
-
-Ideas on the parameter tuning
-
-Neural Network
+FashionMNIST
 ========================================================
 
 Lessons learned
@@ -800,6 +815,10 @@ Lessons learned
 - GPU is indeed helpful
 - Convolution is helpful
 - Parameter tuning is helpful
+
+Pre-trained Model
+========================================================
+type: section
 
 Pre-trained Model
 ========================================================
@@ -980,16 +999,19 @@ print(paste0("Predicted Top-classes: ", synset[max.idx]))
 
 Practice
 ========================================================
+type: sub-section
 
 Try with non-standard pre-processing
 
 Practice
 ========================================================
+type: sub-section
 
 Try it with your images
 
 Practice
 ========================================================
+type: sub-section
 
 Try another model
 
